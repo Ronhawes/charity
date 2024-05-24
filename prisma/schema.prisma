@@ -1,0 +1,391 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model alergy_severity {
+  id               BigInt             @id @default(autoincrement())
+  name             String             @unique @db.VarChar(255)
+  color_code       String?            @db.VarChar(255)
+  description      String?
+  patient_allergie patient_allergie[]
+}
+
+model allocation_status {
+  id          BigInt  @id @default(autoincrement())
+  name        String  @unique @db.VarChar(255)
+  description String?
+}
+
+model fixed_asset_category {
+  id          BigInt  @id @default(autoincrement())
+  name        String  @unique @db.VarChar(255)
+  description String?
+}
+
+model fixed_asset_status {
+  id          BigInt  @id @default(autoincrement())
+  name        String  @unique @db.VarChar(255)
+  description String?
+}
+
+model form {
+  id            BigInt          @id @default(autoincrement())
+  name          String          @db.VarChar(255)
+  description   String?
+  color_code    String?         @db.VarChar(50)
+  info          Json?           @db.Json
+  form_type_id  BigInt
+  created_by    BigInt?
+  created_at    DateTime?       @default(now()) @db.Timestamp(6)
+  updated_at    DateTime?       @default(now()) @db.Timestamp(6)
+  content       Json?           @db.Json
+  member        member?         @relation(fields: [created_by], references: [id], onUpdate: NoAction)
+  form_type     form_type       @relation(fields: [form_type_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  investigation investigation[]
+  procedure     procedure[]
+}
+
+model form_type {
+  id          BigInt  @id @default(autoincrement())
+  name        String  @unique @db.VarChar(255)
+  color_code  String? @db.VarChar(255)
+  description String?
+  form        form[]
+}
+
+model gender {
+  id          BigInt        @id @default(autoincrement())
+  name        String        @unique @db.VarChar(255)
+  description String?
+  member      member[]
+  patient     patient[]
+  patient_kin patient_kin[]
+}
+
+model inventory_category {
+  id          BigInt  @id @default(autoincrement())
+  name        String  @unique @db.VarChar(255)
+  description String?
+}
+
+model inventory_status {
+  id          BigInt  @id @default(autoincrement())
+  name        String  @unique @db.VarChar(255)
+  description String?
+}
+
+model investigation {
+  id                  BigInt                @id @default(autoincrement())
+  name                String                @db.VarChar(255)
+  code                String                @unique @db.VarChar(255)
+  charge              BigInt                @default(0)
+  time                BigInt                @default(20)
+  nano_pic            String?               @db.VarChar(255)
+  form_id             BigInt
+  created_by          BigInt?
+  created_at          DateTime?             @default(now()) @db.Timestamp(6)
+  updated_at          DateTime?             @default(now()) @db.Timestamp(6)
+  info                Json?                 @db.Json
+  member              member?               @relation(fields: [created_by], references: [id], onUpdate: NoAction)
+  form                form                  @relation(fields: [form_id], references: [id], onUpdate: NoAction)
+  investigation_space investigation_space[]
+}
+
+model member {
+  id                                           BigInt                @id @default(autoincrement())
+  name                                         String                @db.VarChar(255)
+  email                                        String                @unique @db.VarChar(1000)
+  phone                                        String                @unique @db.VarChar(50)
+  nano_signature                               String?
+  nano_pic                                     String?
+  bio                                          String?
+  is_active                                    Boolean               @default(true)
+  use_remote                                   Boolean               @default(false)
+  role_id                                      BigInt
+  gender_id                                    BigInt
+  staff_title_id                               BigInt
+  staff_type_id                                BigInt
+  password                                     String
+  created_at                                   DateTime?             @default(now()) @db.Timestamp(6)
+  updated_at                                   DateTime?             @default(now()) @db.Timestamp(6)
+  form                                         form[]
+  investigation                                investigation[]
+  investigation_space                          investigation_space[]
+  gender                                       gender                @relation(fields: [gender_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  role                                         role                  @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  staff_title                                  staff_title           @relation(fields: [staff_title_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  staff_type                                   staff_type            @relation(fields: [staff_type_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  patient                                      patient[]
+  patient_allergie                             patient_allergie[]
+  patient_kin                                  patient_kin[]
+  procedure                                    procedure[]
+  procedure_space                              procedure_space[]
+  space                                        space[]
+  space_member_space_member_created_byTomember space_member[]        @relation("space_member_created_byTomember")
+  space_member_space_member_member_idTomember  space_member[]        @relation("space_member_member_idTomember")
+  vendor                                       vendor[]
+}
+
+model out_patient_type {
+  id          BigInt  @id @default(autoincrement())
+  name        String  @unique @db.VarChar(255)
+  description String?
+}
+
+model patient {
+  id               BigInt             @id @default(autoincrement())
+  first_name       String             @db.VarChar(255)
+  second_name      String?            @db.VarChar(255)
+  sir_name         String?            @db.VarChar(255)
+  email            String?            @db.VarChar(255)
+  phone            String?            @db.VarChar(255)
+  nationality      String?            @db.VarChar(255)
+  occupation       String?            @db.VarChar(255)
+  district         String?            @db.VarChar(255)
+  ward             String?            @db.VarChar(255)
+  dob              DateTime           @db.Date
+  nano_pic         String?
+  gender_id        BigInt
+  religion_id      BigInt
+  created_by       BigInt?
+  created_at       DateTime?          @default(now()) @db.Timestamp(6)
+  updated_at       DateTime?          @default(now()) @db.Timestamp(6)
+  full_name        String?            @default(dbgenerated("((COALESCE(((first_name)::text || ' '::text), ''::text) || COALESCE(((second_name)::text || ' '::text), ''::text)) || (COALESCE(sir_name, ''::character varying))::text)")) @db.VarChar(1000)
+  total_visits     BigInt             @default(0)
+  last_visit       DateTime?          @db.Date
+  in_hospital      Boolean            @default(false)
+  member           member?            @relation(fields: [created_by], references: [id], onUpdate: NoAction)
+  gender           gender             @relation(fields: [gender_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  religion         religion           @relation(fields: [religion_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  patient_allergie patient_allergie[]
+  patient_kin      patient_kin[]
+}
+
+model patient_allergie {
+  id              BigInt          @id @default(autoincrement())
+  name            String          @db.VarChar(500)
+  severity_id     BigInt
+  diagnosis_date  DateTime?       @db.Date
+  treatment       String?
+  notes           String?
+  patient_id      BigInt
+  created_by      BigInt?
+  created_at      DateTime?       @default(now()) @db.Timestamp(6)
+  updated_at      DateTime?       @default(now()) @db.Timestamp(6)
+  member          member?         @relation(fields: [created_by], references: [id], onUpdate: NoAction)
+  patient         patient         @relation(fields: [patient_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  alergy_severity alergy_severity @relation(fields: [severity_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model patient_kin {
+  id              BigInt       @id @default(autoincrement())
+  name            String       @db.VarChar(500)
+  phone           String?      @db.VarChar(50)
+  email           String?      @db.VarChar(50)
+  address         String?      @db.VarChar(255)
+  is_primary      Boolean      @default(false)
+  relationship_id BigInt
+  gender_id       BigInt
+  patient_id      BigInt
+  created_by      BigInt?
+  created_at      DateTime?    @default(now()) @db.Timestamp(6)
+  updated_at      DateTime?    @default(now()) @db.Timestamp(6)
+  member          member?      @relation(fields: [created_by], references: [id], onUpdate: NoAction)
+  gender          gender       @relation(fields: [gender_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  patient         patient      @relation(fields: [patient_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  relationship    relationship @relation(fields: [relationship_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model patient_priority {
+  id          BigInt  @id @default(autoincrement())
+  name        String  @unique @db.VarChar(255)
+  color_code  String? @db.VarChar(100)
+  description String?
+}
+
+model payment_status {
+  id          BigInt  @id @default(autoincrement())
+  name        String  @unique @db.VarChar(255)
+  description String?
+}
+
+model purchase_order_status {
+  id          BigInt  @id @default(autoincrement())
+  name        String  @unique @db.VarChar(255)
+  description String?
+}
+
+model queue_status {
+  id          BigInt  @id @default(autoincrement())
+  name        String  @unique @db.VarChar(255)
+  color_code  String? @db.VarChar(100)
+  description String?
+}
+
+model relationship {
+  id          BigInt        @id @default(autoincrement())
+  name        String        @unique @db.VarChar(255)
+  description String?
+  patient_kin patient_kin[]
+}
+
+model religion {
+  id          BigInt    @id @default(autoincrement())
+  name        String    @unique @db.VarChar(255)
+  description String?
+  patient     patient[]
+}
+
+model role {
+  id          BigInt    @id @default(autoincrement())
+  name        String    @unique @db.VarChar(255)
+  features    Json      @default("[]") @db.Json
+  screens     Json      @default("[]") @db.Json
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+  description String    @default("")
+  forms       Json      @default("[]") @db.Json
+  tables      Json      @default("[]") @db.Json
+  analytics   Json      @default("[]") @db.Json
+  cards       Json      @default("[]") @db.Json
+  member      member[]
+}
+
+model service_status {
+  id          BigInt  @id @default(autoincrement())
+  name        String  @unique @db.VarChar(255)
+  color_code  String? @db.VarChar(100)
+  description String?
+}
+
+model space {
+  id                  BigInt                @id @default(autoincrement())
+  name                String                @db.VarChar(255)
+  code                String                @unique @db.VarChar(255)
+  type_id             BigInt
+  nano_pic            String?               @db.VarChar(1000)
+  color_code          String?               @db.VarChar(255)
+  created_by          BigInt?
+  created_at          DateTime?             @default(now()) @db.Timestamp(6)
+  updated_at          DateTime?             @default(now()) @db.Timestamp(6)
+  investigation_space investigation_space[]
+  procedure_space     procedure_space[]
+  member              member?               @relation(fields: [created_by], references: [id], onUpdate: NoAction)
+  space_type          space_type            @relation(fields: [type_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  space_member        space_member[]
+}
+
+model space_member {
+  id                                     BigInt    @id @default(autoincrement())
+  space_id                               BigInt
+  member_id                              BigInt
+  created_by                             BigInt?
+  created_at                             DateTime? @default(now()) @db.Timestamp(6)
+  member_space_member_created_byTomember member?   @relation("space_member_created_byTomember", fields: [created_by], references: [id], onUpdate: NoAction)
+  member_space_member_member_idTomember  member    @relation("space_member_member_idTomember", fields: [member_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  space                                  space     @relation(fields: [space_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([space_id, member_id])
+}
+
+model space_type {
+  id          BigInt  @id @default(autoincrement())
+  name        String  @unique @db.VarChar(255)
+  description String?
+  space       space[]
+}
+
+model staff_title {
+  id          BigInt   @id @default(autoincrement())
+  name        String   @unique @db.VarChar(255)
+  description String?
+  member      member[]
+}
+
+model staff_type {
+  id          BigInt   @id @default(autoincrement())
+  name        String   @unique @db.VarChar(255)
+  description String?
+  member      member[]
+}
+
+model uom {
+  id          BigInt  @id @default(autoincrement())
+  name        String  @unique @db.VarChar(255)
+  description String?
+}
+
+model procedure {
+  id              BigInt            @id @default(autoincrement())
+  name            String            @db.VarChar(255)
+  code            String            @unique @db.VarChar(255)
+  charge          BigInt            @default(0)
+  info            String?
+  time            BigInt            @default(20)
+  nano_pic        String?           @db.VarChar(255)
+  form_id         BigInt
+  created_by      BigInt?
+  created_at      DateTime?         @default(now()) @db.Timestamp(6)
+  updated_at      DateTime?         @default(now()) @db.Timestamp(6)
+  member          member?           @relation(fields: [created_by], references: [id], onUpdate: NoAction)
+  form            form              @relation(fields: [form_id], references: [id], onUpdate: NoAction)
+  procedure_space procedure_space[]
+}
+
+model investigation_space {
+  id               BigInt        @id @default(autoincrement())
+  investigation_id BigInt
+  space_id         BigInt
+  created_by       BigInt?
+  created_at       DateTime?     @default(now()) @db.Timestamp(6)
+  member           member?       @relation(fields: [created_by], references: [id], onUpdate: NoAction)
+  investigation    investigation @relation(fields: [investigation_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  space            space         @relation(fields: [space_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([space_id, investigation_id])
+}
+
+model procedure_space {
+  id           BigInt    @id @default(autoincrement())
+  procedure_id BigInt
+  space_id     BigInt
+  created_by   BigInt?
+  created_at   DateTime? @default(now()) @db.Timestamp(6)
+  member       member?   @relation(fields: [created_by], references: [id], onUpdate: NoAction)
+  procedure    procedure @relation(fields: [procedure_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  space        space     @relation(fields: [space_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([space_id, procedure_id])
+}
+
+model vendor {
+  id                BigInt              @id @default(autoincrement())
+  company_name      String              @db.VarChar(255)
+  company_phone     String?             @db.VarChar(255)
+  company_email     String?             @db.VarChar(255)
+  bio               String?
+  address           String?             @db.VarChar(500)
+  contact_people    Json?               @db.Json
+  payment_datails   Json?               @db.Json
+  nano_pic          String?             @db.VarChar(1000)
+  is_active         Boolean             @default(true)
+  balance           BigInt              @default(0)
+  total_payment     BigInt              @default(0)
+  created_by        BigInt?
+  created_at        DateTime?           @default(now()) @db.Timestamp(6)
+  updated_at        DateTime?           @default(now()) @db.Timestamp(6)
+  member            member?             @relation(fields: [created_by], references: [id], onUpdate: NoAction)
+  vendor_attachment vendor_attachment[]
+}
+
+model vendor_attachment {
+  id         BigInt    @id @default(autoincrement())
+  vendor_id  BigInt?
+  nano       String
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  vendor     vendor?   @relation(fields: [vendor_id], references: [id], onUpdate: NoAction)
+}
