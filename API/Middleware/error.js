@@ -13,7 +13,7 @@ function errorMiddleware(error, req, res, next) {
       if (error?.meta) {
         return res.status(400).json({
           custom: true,
-          message: `!! ${error.meta.target.join(", ")} .Should be unique`,
+          message: `!! ${error.meta.target.join(", ")} .Should be always unique`,
           meta: error.meta.target,
         });
       }
